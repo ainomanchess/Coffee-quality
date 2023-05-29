@@ -1,0 +1,134 @@
+---
+title: "Tarea 2"
+author: "Ainoha Jimenez Zamora"
+format:
+  html: 
+    theme: "Minty" 
+    toc: true
+    toc_float: true
+lang: es
+editor: visual
+---
+
+# Introducción
+
+En este documento se destaca la calidad del café y para ello se utilizará una combinación de información detallada y gráficos ilustrativos para presentar de manera clara y concisa los diferentes aspectos que influyen en la calidad del café recopilados de El Coffee Quality Institute (CQI). Siendo esta su página web:\
+[CQI](https://github.com/fatih-boyar/coffee-quality-data-CQI)
+
+# Carga de paquetes
+
+```{r}
+#| label: carga-paquetes
+#| warning: false
+#| code-fold: true
+
+library(tidyverse)
+library(plotly)
+library(DT)
+library(readr)
+library(ggplot2)
+library(gapminder)
+library(ggthemes)
+library(hrbrthemes)
+```
+
+# Tabla de datos
+
+```{r}
+#| leabel: tabla-datos
+#| warning: false
+#| code-fold: true
+#| message: false
+
+tabla <- "https://raw.githubusercontent.com/gf0604-procesamientodatosgeograficos/2023-i/main/datos/cqi/coffee-quality.csv"
+data <- read.csv(tabla)
+
+
+datatable(data[, c(
+  "Country_of_Origin", 
+  "Variety", 
+  "Color", 
+  "Altitude", 
+  "Total_Cup_Points")],
+  options = list(pageLength = 10, lengthMenu = c(10, 20, 50)),
+  rownames = FALSE)
+
+```
+
+# Gráficos
+
+## Histograma
+
+```{r}
+#| leabel: tabla-datos
+#| warning: false
+#| code-fold: true
+#| message: false
+
+histograma <-
+ggplot(data, aes(x = Total_Cup_Points)) +
+  geom_histogram(
+    aes(
+      text = paste0(
+        "Distribución", round(after_stat(x), 2), "\n",
+        "Frecuencia: ", after_stat(count)
+      ),
+      y = after_stat(density) 
+    ),
+    bins = 10
+  ) +
+  geom_density() +
+  scale_y_continuous(labels = scales::label_comma()) +
+  labs(x = "Total", y = "Frecuencia", 
+       title = "Distribución de Total") +
+  theme_few()
+
+ggplotly(histograma, tooltip = "text") |>
+  config(locale = 'es')
+
+```
+
+## Gráfico de disperción
+
+```{r}
+#| leabel: grafico-dispersion
+#| warning: false
+#| code-fold: true
+#| message: false
+
+dispersion <-
+  ggplot(data, aes(x = Altitude, y = Total_Cup_Points)) +
+  geom_point(aes(
+    text = paste0(
+      "País: ", Country_of_Origin, "\n",
+      "Altitud:", round(Altitude, 2), "\n",
+      "Puntaje Total:", round(Total_Cup_Points, 2), "\n"
+    )
+  )) +
+  geom_smooth(method = "lm") +
+  ggtitle("Altitud vs Total Cup Points") +
+  xlab("Altitud") +
+  ylab("Puntaje Total") +
+  theme_few()  
+
+ggplotly(dispersion, tooltip = "text") |>
+  config(locale = 'es')
+```
+
+## Gráfico de caja
+
+```{r}
+#| leabel: grafico-caja
+#| warning: false
+#| code-fold: true
+#| message: false
+caja <- ggplot(data, aes(x = Color, y = Total_Cup_Points)) +
+  geom_boxplot() +
+  ggtitle("Distribución del Puntaje Total cada color") +
+  xlab("Color") +
+  ylab("Puntaje Total") +
+  theme_few()
+
+ggplotly(caja) |> 
+  config(locale = 'es')
+```
